@@ -20,6 +20,29 @@ def ai_agent_router():
     
     cmd = d["text_command"].strip().lower()
 
+    if "spotify" in cmd:
+    q = cmd.lower()
+
+    for p in [
+        "open spotify and search",
+        "open spotify and play",
+        "open spotify",
+        "search for",
+        "search",
+        "and play",
+        "play",
+        "on spotify"
+    ]:
+        q = q.replace(p, "")
+
+    q = q.strip()
+
+    target = (
+        "https://open.spotify.com"
+        if not q
+        else f"https://open.spotify.com/search/{urllib.parse.quote(q)}"
+    )
+
     if "youtube" in cmd:
         q = cmd
         for p in ["open youtube and search", "open youtube and play", "open youtube", "search for", "search", "and play", "play", "on youtube"]:
