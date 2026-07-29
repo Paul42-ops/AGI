@@ -20,6 +20,7 @@ def ai_agent_router():
     
     cmd = d["text_command"].strip().lower()
 
+    # 1. YouTube
     if "youtube" in cmd:
         q = cmd
         for p in ["open youtube and search", "open youtube and play", "open youtube", "search for", "search", "and play", "play", "on youtube"]:
@@ -27,6 +28,7 @@ def ai_agent_router():
         q = q.strip()
         target = "https://www.youtube.com" if not q else (f"https://www.youtube.com/watch?v={vid}&autoplay=1" if (vid := get_vid(q)) else f"https://www.youtube.com/results?search_query={urllib.parse.quote_plus(q)}")
 
+    # 2. Gmail / Email
     elif any(k in cmd for k in ["gmail", "email", "mail", "message"]):
         to, body = "", ""
         if tm := re.search(r"(?:update|send|mail|message)?\s*to\s+([a-zA-Z0-9._%+\s]+?)(?=\s+(?:and|type|write|saying|with|content|that|message|$))", cmd):
@@ -38,6 +40,42 @@ def ai_agent_router():
 
         target = f"https://mail.google.com/mail/u/0/?view=cm&fs=1&to={urllib.parse.quote(to)}&body={urllib.parse.quote(body)}" if to or body else "https://mail.google.com"
 
+    # 3. Spotify
+    elif "spotify" in cmd:
+        q = cmd
+        for p in ["open spotify and play", "play", "on spotify", "spotify", "search for"]:
+            q = q.replace(p, "")
+        q = q.strip()
+        target = f"https://open.spotify.com/search/{urllib.parse.quote_plus(q)}" if q else "https://open.spotify.com"
+
+    # 4. Google Maps
+    elif any(k in cmd for k in ["map", "navigate", "directions", "location"]):
+        if m := re.search(r"(?:navigate to|directions to|map of|find|to)\s+(.+?)(?=\s+from|$)", cmd):
+            dest = m.group(1).strip()
+            target = f"https://www.google.com/maps/search/{urllib.parse.quote_plus(dest)}"
+        else:
+            target = "https://www.google.com/maps"
+
+    # 5. GitHub
+    elif "github" in cmd:
+        q = cmd
+        for p in ["search github for", "search github", "open github", "github", "find on", "search"]:
+            q = q.replace(p, "")
+        q = q.strip()
+        target = f"https://github.com/search?q={urllib.parse.quote_plus(q)}" if q else "https://github.com"
+
+    # 6. Reddit
+    elif "reddit" in cmd:
+        if m := re.search(r"(?:open|go to)?\s*r/([a-zA-Z0-9_]+)", cmd):
+            target = f"https://www.reddit.com/r/{m.group(1).strip()}"
+        else:
+            q = cmd
+            for p in ["search reddit for", "on reddit", "reddit", "search"]:
+                q = q.replace(p, "")
+            q = q.strip()
+            target = f"https://www.reddit.com/search/?q={urllib.parse.quote_plus(q)}" if q else "https://www.reddit.com"
+
+    # 7. Default Google Search
     else:
         target = f"https://www.google.com/search?q={urllib.parse.quote_plus(cmd)}"
 
